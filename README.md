@@ -1,61 +1,100 @@
-# kushagra.ai
+# AI Meeting Intelligence Assistant
 
-A local-first AI meeting assistant prototype. Record real microphone audio in the browser, see live captions, save meetings to SQLite, and generate structured meeting intelligence through Gemini Flash or a local LM Studio model.
+A local-first meeting assistant prototype built with React, TypeScript, FastAPI, SQLite, browser audio capture, Gemini, and optional Whisper transcription.
 
-## Features
+It records a meeting in the browser, preserves the recording locally, shows live captions, produces a timestamped transcript, and generates structured meeting intelligence such as summaries, decisions, and action items.
 
-- Real browser microphone recording with pause/resume/stop and audio playback
-- Live transcript via browser Web Speech API when supported
-- Final transcript via `faster-whisper` when installed, with a safe browser-caption fallback
-- SQLite meeting history and local recording storage
-- Structured summary, key points, decisions, and action items from Gemini Flash or LM Studio
-- Meeting-scoped Q&A grounded in the selected transcript
-- Responsive dark product UI with recording, processing, empty, and error states
+## What this demonstrates
 
-## Local setup on Windows
+- Full-stack product development with a React/Vite frontend and FastAPI backend
+- Browser microphone and shared-tab audio capture
+- WebSocket-based live meeting updates
+- Local SQLite persistence and audio playback
+- AI-assisted summaries, decisions, action items, and meeting Q&A
+- A privacy-first prototype design that keeps recordings local by default
 
-1. Copy `.env.example` to `.env` and adjust values if needed.
-2. Backend:
+## Architecture
+
+```text
+Browser microphone / shared-tab audio
+              |
+              v
+        React + Vite UI
+              |
+              v
+        FastAPI REST/WebSocket API
+          |                 |
+          v                 v
+   SQLite + local audio   Gemini / LM Studio
+          |
+          v
+   Transcript + insights
+```
+
+## Run locally on Windows
+
+### 1. Configure the backend
+
+From the repository root:
 
 ```powershell
+Copy-Item .env.example .env
 python -m venv .venv
 .venv\Scripts\activate
-pip install -r backend\requirements.txt
+python -m pip install -r backend\requirements.txt
 python -m uvicorn backend.app.main:app --reload
 ```
 
-3. Frontend in a second terminal:
+Keep the backend terminal running.
+
+### 2. Start the frontend
+
+Open a second terminal in the repository root:
 
 ```powershell
+cd frontend
 npm install
 npm run dev
 ```
 
-4. Open the Vite URL, usually `http://localhost:5173`.
+Open the Vite URL shown in the terminal, usually `http://localhost:5173`.
 
-## LM Studio
+### 3. Enable an AI provider
 
-Install LM Studio, download a small instruct model suitable for a CPU laptop, load it, and start the local server on port `1234`. Set `LM_STUDIO_MODEL` to the loaded model identifier. The app remains usable if LM Studio is unavailable, but processing will show a helpful error and preserve the transcript.
+Copy `.env.example` to `.env`, then configure one of these options:
 
-## Gemini Flash
+- **Gemini:** set `GEMINI_API_KEY` and the supported `GEMINI_MODEL`.
+- **LM Studio:** load a local instruct model and start its OpenAI-compatible server on port `1234`.
 
-Alternatively, set `GEMINI_API_KEY` and `GEMINI_MODEL=gemini-3.1-flash-lite` in `.env`. Gemini is then used to recover a transcript from saved audio and generate meeting intelligence. Keep the key server-side and never commit `.env`.
+Never commit `.env` or share an API key.
 
-## STT
+## Testing
 
-The default `STT_MODEL=base` is a practical CPU starting point. `faster-whisper` downloads the model on first use and can be changed to `tiny` for faster testing or `small` for better quality. If it is unavailable, the backend preserves live browser captions as the final transcript so the prototype remains demonstrable.
-
-## Known limitations
-
-Speaker labels are browser-caption placeholders, not diarization. Live caption support depends on browser Web Speech API availability. Audio chunk transcription is intentionally lightweight; final Whisper processing is the accuracy path. LM Studio must be running for AI-generated intelligence and Q&A.
-
-## GitHub commands
+The repository includes a GitHub Actions workflow that checks Python syntax and builds the frontend. Run the same local frontend check with:
 
 ```powershell
-git init
-git add .
-git commit -m "Build local meeting intelligence prototype"
-git branch -M main
-git remote add origin https://github.com/YOUR-USER/YOUR-REPO.git
-git push -u origin main
+cd frontend
+npm run build
 ```
+
+## Current limitations
+
+- Speaker labels are prototype labels; reliable multi-speaker diarization still needs a dedicated diarization service or model.
+- Live captions depend on browser speech-recognition support and may differ from the final transcript.
+- Audio and SQLite data are local development data and are intentionally ignored by Git.
+- The prototype is not a replacement for consent, privacy, or recording policies in real meetings.
+
+## Privacy and security
+
+Record only with participant consent. Keep API keys server-side in `.env`. Local recordings and the SQLite database are excluded from version control. If Gemini is enabled, audio or transcript data sent to the provider is subject to that provider's terms and account settings.
+
+## Roadmap
+
+- Add production-grade speaker diarization and speaker-name correction
+- Add transcript search, export, and synchronized audio navigation
+- Add evaluation fixtures for transcription and meeting intelligence quality
+- Add authentication and encrypted storage for a production deployment
+
+## License
+
+MIT. See [LICENSE](LICENSE).
