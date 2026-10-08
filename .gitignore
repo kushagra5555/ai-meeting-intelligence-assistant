@@ -1,0 +1,12 @@
+.env
+.venv/
+__pycache__/
+*.pyc
+*.tsbuildinfo
+node_modules/
+dist/
+data/*
+!data/.gitkeep
+backend/data/*
+!backend/data/.gitkeep
+.playwright-mcp/
